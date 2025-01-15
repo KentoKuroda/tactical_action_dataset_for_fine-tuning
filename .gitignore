@@ -1,2 +1,5 @@
+annotation_data/
+raw/
 
 .codegpt
+token.pickle
