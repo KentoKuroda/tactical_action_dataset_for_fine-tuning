@@ -32,16 +32,23 @@ def main():
 def generate_csv(json_files, output_dir):
     video_data = defaultdict(list)
 
+    # 定義済み列名の順序
+    fixed_labels = [
+        "Build up", "Progression", "Final third", "Counter-attack", 
+        "High press", "Mid block", "Low block", "Counter-press", "Recovery"
+    ]
+    fieldnames = ["match time"] + fixed_labels
+
     # Read and group annotations by video
     for json_file in json_files:
         with open(json_file, "r") as f:
             data = json.load(f)
             for entry in data:
-                key = (entry["start_video"], entry["end_video"])
+                key = (entry["game_id"], entry["start_video"], entry["end_video"])
                 video_data[key].append(entry["annotations"])
 
     # Process each video
-    for (start_video, end_video), annotations_list in video_data.items():
+    for (game_id, start_video, end_video), annotations_list in video_data.items():
         start_seconds = parse_time_to_seconds(start_video)
         end_seconds = parse_time_to_seconds(end_video)
         duration = end_seconds - start_seconds
@@ -60,29 +67,25 @@ def generate_csv(json_files, output_dir):
 
         # Normalize probabilities
         for t in probabilities:
-            total_votes = sum(probabilities[t].values())
-            if total_votes > 0:
-                for label in probabilities[t]:
-                    probabilities[t][label] /= total_votes
-
-        # Get all labels
-        all_labels = sorted({label for t in probabilities for label in probabilities[t]})
+            for label in probabilities[t]:
+                probabilities[t][label] /= 4
 
         # Write to CSV
         sanitized_start_video = sanitize_filename(start_video)
         sanitized_end_video = sanitize_filename(end_video)
-        output_file = f"{output_dir}/{sanitized_start_video}-{sanitized_end_video}.csv"
+        output_file = f"{output_dir}/{game_id}_{sanitized_start_video}-{sanitized_end_video}.csv"
+
         with open(output_file, "w", newline="") as csvfile:
-            fieldnames = ["match time"] + all_labels
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writeheader()
             for t in range(start_seconds, end_seconds):
-                row = {label: probabilities[t].get(label, 0.0) for label in all_labels}
+                row = {label: probabilities[t].get(label, 0.0) for label in fixed_labels}
                 row["match time"] = format_seconds_to_time(t)
                 writer.writerow(row)
 
         print(f"CSV file saved: {output_file}")
+
 
 
 def parse_time_to_seconds(time_str):

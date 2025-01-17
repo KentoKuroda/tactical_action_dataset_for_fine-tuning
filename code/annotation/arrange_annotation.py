@@ -72,19 +72,19 @@ def arrange_annotation(xml_file, txt_file, output_file):
                 if video == next_video:
                     end_formatted = format_time(next_video_start_time + next_offset)
                 else:
-                    end_formatted = format_time(videos[video][1])
+                    end_formatted = format_time(videos[video][2])
             else:
-                end_formatted = format_time(videos[video][1])
+                end_formatted = format_time(videos[video][2])
 
             # Add to JSON structure
-            existing_video = next((item for item in annotations_data if item["start_video"] == format_time(videos[video][0])), None)
+            existing_video = next((item for item in annotations_data if item["start_video"] == format_time(videos[video][1])), None)
             if existing_video:
                 existing_video["annotations"].append({"label": code, "start": start_formatted, "end": end_formatted})
             else:
                 annotations_data.append({
-                    "game_id": game_id,
-                    "start_video": format_time(videos[video][0]),
-                    "end_video": format_time(videos[video][1]),
+                    "game_id": videos[video][0],
+                    "start_video": format_time(videos[video][1]),
+                    "end_video": format_time(videos[video][2]),
                     "annotations": [
                         {"label": code, "start": start_formatted, "end": end_formatted}
                     ]
@@ -116,14 +116,14 @@ def format_time(seconds):
     return f"{int(minutes):02}:{int(seconds):02}"
 
 
-def find_video_and_offset(annotation_start, videos):
+def find_video_and_offset(annotation_start_in_seq, videos):
     elapsed_time = 0
     for video in videos:
         game_id, start_time, end_time = videos[video]
         video_duration = end_time - start_time
-        if elapsed_time <= annotation_start < elapsed_time + video_duration:
-            offset = annotation_start - elapsed_time
-            return video, offset, start_time
+        if elapsed_time <= annotation_start_in_seq < elapsed_time + video_duration:
+            annotation_start_in_video = annotation_start_in_seq - elapsed_time
+            return video, annotation_start_in_video, start_time
         elapsed_time += video_duration
     return None, None, None
 
