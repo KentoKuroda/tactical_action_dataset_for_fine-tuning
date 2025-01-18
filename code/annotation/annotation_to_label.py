@@ -73,7 +73,7 @@ def generate_csv(json_files, output_dir):
         # Write to CSV
         sanitized_start_video = sanitize_filename(start_video)
         sanitized_end_video = sanitize_filename(end_video)
-        output_file = f"{output_dir}/{game_id}_{sanitized_start_video}-{sanitized_end_video}.csv"
+        output_file = f"{output_dir}/{game_id}_{sanitized_start_video}-{sanitized_end_video}_annotation.csv"
 
         with open(output_file, "w", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -85,7 +85,6 @@ def generate_csv(json_files, output_dir):
                 writer.writerow(row)
 
         print(f"CSV file saved: {output_file}")
-
 
 
 def parse_time_to_seconds(time_str):
