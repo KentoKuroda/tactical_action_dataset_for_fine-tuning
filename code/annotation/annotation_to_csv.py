@@ -21,10 +21,10 @@ def main():
         # input file
         input_files = []
         for i in range(1,5):
-            input_files.append(f'annotation_data/{video_id}_{team_id}/{video_id}_{i}_{team_id}.json')
+            input_files.append(f'raw/annotation/{video_id}_{team_id}/{video_id}_{i}_{team_id}.json')
         
         # output file
-        output_dir = f'annotation_data/{video_id}_{team_id}'
+        output_dir = f'raw/annotation/{video_id}_{team_id}'
 
         generate_csv(input_files, output_dir)
 
@@ -33,11 +33,8 @@ def generate_csv(json_files, output_dir):
     video_data = defaultdict(list)
 
     # 定義済み列名の順序
-    fixed_labels = [
-        "Build up", "Progression", "Final third", "Counter-attack", 
-        "High press", "Mid block", "Low block", "Counter-press", "Recovery"
-    ]
-    fieldnames = ["match time"] + fixed_labels
+    fixed_labels = ["Build up", "Progression", "Final third", "Counter-attack", "High press", "Mid block", "Low block", "Counter-press", "Recovery"]
+    fieldnames = ["match_time"] + fixed_labels
 
     # Read and group annotations by video
     for json_file in json_files:
@@ -49,19 +46,17 @@ def generate_csv(json_files, output_dir):
 
     # Process each video
     for (game_id, start_video, end_video), annotations_list in video_data.items():
-        start_seconds = parse_time_to_seconds(start_video)
-        end_seconds = parse_time_to_seconds(end_video)
-        duration = end_seconds - start_seconds
+        duration = end_video - start_video
 
         # Initialize a dictionary for each second
-        probabilities = {t: defaultdict(float) for t in range(start_seconds, end_seconds)}
+        probabilities = {t: defaultdict(float) for t in range(start_video, end_video)}
 
         # Aggregate annotations
         for annotations in annotations_list:
             for annotation in annotations:
                 label = annotation["label"]
-                label_start = max(start_seconds, parse_time_to_seconds(annotation["start"]))
-                label_end = min(end_seconds, parse_time_to_seconds(annotation["end"]))
+                label_start = max(start_video, annotation["start"])
+                label_end = min(end_video, annotation["end"])
                 for t in range(label_start, label_end):
                     probabilities[t][label] += 1
 
@@ -79,27 +74,21 @@ def generate_csv(json_files, output_dir):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writeheader()
-            for t in range(start_seconds, end_seconds):
+            for t in range(start_video, end_video):
+                if t % 200 != 0:
+                    continue
                 row = {label: probabilities[t].get(label, 0.0) for label in fixed_labels}
-                row["match time"] = format_seconds_to_time(t)
+                row["match_time"] = t
                 writer.writerow(row)
 
         print(f"CSV file saved: {output_file}")
 
 
-def parse_time_to_seconds(time_str):
-    minutes, seconds = map(int, time_str.split(":"))
-    return minutes * 60 + seconds
-
-
-def format_seconds_to_time(seconds):
-    minutes = seconds // 60
-    seconds = seconds % 60
-    return f"{minutes:02}:{seconds:02}"
-
-
-def sanitize_filename(filename):
-    return filename.replace(":", "_")
+def sanitize_filename(time):
+    time = time / 1000
+    minutes = int(time / 60)
+    seconds = int(time % 60)
+    return f"{minutes:02}_{seconds:02}"
 
 
 if __name__ == "__main__":

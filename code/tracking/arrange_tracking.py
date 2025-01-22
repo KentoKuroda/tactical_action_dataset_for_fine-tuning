@@ -16,7 +16,7 @@ def main():
     match_ids = [str(match_id) for match_id in args.match_id.split(",")]
 
     # Load JSON data
-    json_file = 'raw/video_info.json'
+    json_file = 'raw/video_info/video_info.json'
     with open(json_file, 'r') as f:
         json_data = json.load(f)
 
@@ -30,7 +30,7 @@ def main():
 
 
 def process_tracking_data(csv_file, json_data, output_dir):
-    game_id, start_time, _ = parse_time_range(Path(csv_file).stem)
+    game_id, start_time, end_time = parse_time_range(Path(csv_file).stem)
     half = determine_half(start_time)
     if half is None:
         print(f"Skipping file {csv_file}: Could not determine half.")
@@ -40,15 +40,15 @@ def process_tracking_data(csv_file, json_data, output_dir):
         right_team_id = str(json_data[game_id]['right_team_id_1st_half'])
         left_team_id = str(json_data[game_id]['left_team_id_1st_half'])
     elif half == '2nd':
-        right_team_id = json_data[game_id]['left_team_id_1st_half']
-        left_team_id = json_data[game_id]['right_team_id_1st_half']
-    print(half, left_team_id, right_team_id)
+        right_team_id = str(json_data[game_id]['left_team_id_1st_half'])
+        left_team_id = str(json_data[game_id]['right_team_id_1st_half'])
+    print(game_id, start_time, end_time, half, left_team_id, right_team_id)
 
     # Load CSV data
     df = pd.read_csv(csv_file)
 
     # Define positions in the desired order
-    position_order = ['GK', 'CB', 'RWB', 'RB', 'LWB', 'LB', 'CDM', 'CM', 'CAM', 'RW', 'LW', 'CF']
+    position_order = ['GK', 'CB', 'RWB', 'RB', 'LWB', 'LB', 'CDM', 'RM', 'CM', 'LM', 'CAM', 'RW', 'LW', 'CF']
 
     # Create empty lists for rows
     rows = []

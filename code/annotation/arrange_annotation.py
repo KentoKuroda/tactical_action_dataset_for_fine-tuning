@@ -21,13 +21,13 @@ def main():
     for video_id in video_ids:
         for anno_id in anno_ids:
             # XMLファイルの読み込み
-            xml_file = f'raw/{video_id}_{anno_id}_{team_id}.xml'
+            xml_file = f'raw/annotation/{video_id}_{team_id}/{video_id}_{anno_id}_{team_id}.xml'
 
             # TXTファイルの読み込み
-            txt_file = f'raw/videolist_{video_id}.txt'
+            txt_file = f'raw/video_info/videolist_{video_id}.txt'
 
             # output file
-            output_file = f'annotation_data/{video_id}_{team_id}/{video_id}_{anno_id}_{team_id}.json'
+            output_file = f'raw/annotation/{video_id}_{team_id}/{video_id}_{anno_id}_{team_id}.json'
 
             arrange_annotation(xml_file, txt_file, output_file)
 
@@ -111,9 +111,8 @@ def parse_time_range(filename):
 
 
 def format_time(seconds):
-    minutes = seconds // 60
-    seconds = seconds % 60
-    return f"{int(minutes):02}:{int(seconds):02}"
+    m_seconds = seconds * 1000
+    return int(m_seconds)
 
 
 def find_video_and_offset(annotation_start_in_seq, videos):

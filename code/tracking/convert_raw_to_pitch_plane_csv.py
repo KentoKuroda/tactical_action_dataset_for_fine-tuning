@@ -32,7 +32,7 @@ def main():
         output_csv = f"raw/tracking/{match_id}/{match_id}_pitch_plane_coordinates.csv"
 
         if match_id == '132831' or match_id == '132877':
-            for i in range(2, 4):
+            for i in range(1, 4):
                 input_json = f"raw/tracking/{match_id}/{match_id}_{i}_frame_data.json"
                 output_csv = f"raw/tracking/{match_id}/{match_id}_{i}_pitch_plane_coordinates.csv"
                 tracking_data = parse_json(input_json)
@@ -59,7 +59,7 @@ def parse_xml(xml_path):
 
     for frame in root.findall("frame"):
         frame_number = int(frame.get("frameNumber"))
-        match_time = float(frame.get("matchTime"))
+        match_time = int(frame.get("matchTime"))
         
         for player in frame:
             player_id = player.get("playerId")
@@ -99,7 +99,7 @@ def parse_json(json_path):
             try:
                 tracking_data.append({
                     "frame": int(frame_number),
-                    "match_time": float(player.get("match_time", 0)),
+                    "match_time": int(player.get("match_time", 0)),
                     "player_id": "ball" if player.get("player_id") == None else player.get("player_id"),
                     "x": float(player.get("x", 0)),
                     "y": float(player.get("y", 0))

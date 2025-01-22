@@ -165,20 +165,20 @@ def classify_pattern(row):
 
 def calculate_overall_summary(results):
     """
-    Calculate the overall summary of proportions for all tactics, merging Tactic 1 and 2,
-    and excluding 0.0 from the proportion calculation.
+    Calculate the overall summary of proportions and counts for all tactics,
+    merging Tactic 1 and 2, and excluding 0.0 from the proportion calculation.
 
     Args:
         results (pd.DataFrame): DataFrame containing "Tactic" and "Value" columns.
 
     Returns:
-        pd.DataFrame: Summary of proportions for all tactics, combined by tactic name,
-                    with 0.0 excluded from the proportions.
+        pd.DataFrame: Summary of proportions and counts for all tactics,
+                      combined by tactic name with 0.0 excluded.
     """
     # Remove " 1" or " 2" suffix from Tactic names
     results["Tactic"] = results["Tactic"].str.replace(r" \d$", "", regex=True)
 
-    # Group by tactic name and calculate proportions excluding 0.0
+    # Group by tactic name and calculate proportions and counts excluding 0.0
     summary = []
     for tactic, group in results.groupby("Tactic"):
         # Count the occurrences of each value
@@ -188,9 +188,13 @@ def calculate_overall_summary(results):
         filtered_counts = {k: v for k, v in value_counts.items() if k > 0.0}
         total_filtered = sum(filtered_counts.values())
         
-        # Calculate proportions for non-zero values
+        # Calculate proportions for non-zero values and keep counts
         summary.append({
             "Tactic": tactic,
+            "0.25_count": filtered_counts.get(0.25, 0),
+            "0.5_count": filtered_counts.get(0.5, 0),
+            "0.75_count": filtered_counts.get(0.75, 0),
+            "1.0_count": filtered_counts.get(1.0, 0),
             "0.25": filtered_counts.get(0.25, 0) / total_filtered if total_filtered > 0 else 0,
             "0.5": filtered_counts.get(0.5, 0) / total_filtered if total_filtered > 0 else 0,
             "0.75": filtered_counts.get(0.75, 0) / total_filtered if total_filtered > 0 else 0,

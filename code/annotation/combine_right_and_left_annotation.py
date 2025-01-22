@@ -46,17 +46,17 @@ def combine_csv_files(left_csv_dir: Path, right_csv_dir: Path):
         right_df = pd.read_csv(right_csv_file)
 
         # Rename columns for Left and Right
-        left_df.columns = [f"{col} 1" if col != "match time" else col for col in left_df.columns]
-        right_df.columns = [f"{col} 2" if col != "match time" else col for col in right_df.columns]
+        left_df.columns = [f"{col} 1" if col != "match_time" else col for col in left_df.columns]
+        right_df.columns = [f"{col} 2" if col != "match_time" else col for col in right_df.columns]
 
         # Merge the dataframes on "match time"
-        combined_df = pd.merge(left_df, right_df, on="match time", how="outer")
+        combined_df = pd.merge(left_df, right_df, on="match_time", how="outer")
 
         # Sort by match time (if necessary)
-        combined_df = combined_df.sort_values(by="match time")
+        combined_df = combined_df.sort_values(by="match_time")
 
         # Save the combined dataframe to a new CSV file
-        output_file = output_dir / f"{os.path.splitext(Path(left_csv_file).stem)[0]}_annotation_combined.csv"
+        output_file = output_dir / f"{os.path.splitext(Path(left_csv_file).stem)[0]}_combined.csv"
         combined_df.to_csv(output_file, index=False)
         print(f"Combined CSV saved to {output_file}")
 

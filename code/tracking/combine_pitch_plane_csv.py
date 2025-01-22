@@ -34,7 +34,7 @@ def combine_csv_files(input_folder, output_file):
         None
     """
     # Get a list of all CSV files in the folder
-    csv_files = glob.glob(f"{input_folder}/*.csv")
+    csv_files = glob.glob(f"{input_folder}/*pitch_plane_coordinates.csv")
     if not csv_files:
         print("No CSV files found in the specified folder.")
         return
