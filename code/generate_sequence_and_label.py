@@ -102,6 +102,11 @@ def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):
         # 等間隔でサンプリング (現在のフレームを含める)
         sampled_indices = np.linspace(-original_frames, -1, num=num_frames, dtype=int)
         sampled_data = past_data.iloc[sampled_indices, 1:].values  # match_timeを除外
+
+        # NaNを含むシーケンスをスキップ
+        if np.isnan(sampled_data).any():
+            continue
+
         sequence_data.append(sampled_data)
 
         # 対応するラベルデータを取得
