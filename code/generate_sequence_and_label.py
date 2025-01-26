@@ -57,6 +57,11 @@ def process_data(directory):
         base_name = annotation_file.stem.replace("_annotation_combined", "")
         tracking_file = annotation_file.parent / f"{base_name}_tracking_arranged.csv"
 
+        # 117093_09_22-10_07
+        if base_name == '117093_09_22-10_07':
+            print(base_name)
+            continue
+
         if not tracking_file.exists():
             print(f"Tracking file not found for {annotation_file.name}. Skipping.")
             continue
