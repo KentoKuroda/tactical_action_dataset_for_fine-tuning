@@ -71,8 +71,8 @@ def parse_xml(xml_path):
                     "frame": frame_number,
                     "match_time": match_time,
                     "player_id": player_id,
-                    "x": x,
-                    "y": y
+                    "x": "{:.2f}".format(x * 105 - 52.5),
+                    "y": "{:.2f}".format(y * 68 - 34.0)
                 })
             except ValueError:
                 logger.warning(f"Invalid location format for player {player_id} in frame {frame_number}")
@@ -101,8 +101,8 @@ def parse_json(json_path):
                     "frame": int(frame_number),
                     "match_time": int(player.get("match_time", 0)),
                     "player_id": "ball" if player.get("player_id") == None else player.get("player_id"),
-                    "x": float(player.get("x", 0)),
-                    "y": float(player.get("y", 0))
+                    "x": "{:.2f}".format(float(player.get("x", 0) - 52.5)),
+                    "y": "{:.2f}".format(float(player.get("y", 0) - 34.0))
                 })
             except ValueError:
                 logger.warning(f"Invalid data format in frame {frame_number}")

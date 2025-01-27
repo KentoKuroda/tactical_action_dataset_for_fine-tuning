@@ -17,6 +17,7 @@ def main():
     match_ids = [str(match_id) for match_id in args.match_ids.split(",")]
 
     # Output numpy file
+    # 117093_09_22-10_07_
     output_sequence_numpy = "data/sequence_np.npy"
     output_label_numpy = "data/label_np.npy"
 
