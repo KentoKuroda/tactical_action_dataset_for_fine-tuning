@@ -46,6 +46,7 @@ def visualize_pitch_coordinates(tracking_data, video_file, pitch_points):
         return
     
     H = compute_homography(pitch_points)
+    print(H)
     cap = cv2.VideoCapture(str(video_file))
     
     if not cap.isOpened():
@@ -75,7 +76,7 @@ def visualize_pitch_coordinates(tracking_data, video_file, pitch_points):
             for pos in transformed_positions:
                 x, y = int(pos[0]), int(pos[1])
                 cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
-        print(frame_idx)
+        # print(frame_idx)
         
         out_video.write(frame)
         frame_idx += 1
