@@ -17,7 +17,7 @@ def main():
 
     for match_id in match_ids:
         # input
-        panorama_video = f"raw/video/{match_id}/{match_id}.mp4"
+        panorama_video = f"raw/video/{match_id}/{match_id}.mp4" # _calibrated
         video_list = f"raw/video/{match_id}/{match_id}_videolist.txt"
         video_info = "raw/video/video_info.json"
 
@@ -49,6 +49,7 @@ def get_sequence_video(panorama_video, video_list, video_info, output_video_dir)
         video_files = f.read().splitlines()
     
     for video_name in video_files:
+        print(video_name)
         match = re.match(r"\d+_(\d+)_(\d+)-(\d+)_(\d+).mp4", video_name)
         if not match:
             print(f"Skipping invalid file name format: {video_name}")
@@ -66,7 +67,7 @@ def get_sequence_video(panorama_video, video_list, video_info, output_video_dir)
             real_start_time = second_half_start + ((start_time - 2700) * 1000)
             real_end_time = second_half_start + ((end_time - 2700) * 1000)
         
-        output_video_path = os.path.join(output_video_dir, video_name.replace('.mp4', '_video.mp4'))
+        output_video_path = os.path.join(output_video_dir, video_name) #.replace('.mp4', '_video.mp4'))
         
         # ffmpegを使用して映像を切り取る
         cmd = [

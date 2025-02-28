@@ -17,7 +17,7 @@ def main():
     match_ids = [str(match_id) for match_id in args.match_ids.split(",")]
 
     # Output numpy file
-    # 117093_09_22-10_07_
+    # 117093_09_22-10_07_, 128058_03_51-05_07_
     output_sequence_numpy = "data/sequence_np.npy"
     output_label_numpy = "data/label_np.npy"
 
@@ -58,9 +58,10 @@ def process_data(directory):
         base_name = annotation_file.stem.replace("_annotation_combined", "")
         tracking_file = annotation_file.parent / f"{base_name}_tracking_arranged.csv"
 
-        # 117093_09_22-10_07
-        if base_name == '117093_09_22-10_07':
+        # 117093_09_22-10_07, 128058_03_51-05_07
+        if base_name == '117093_09_22-10_07' or base_name == '128058_03_51-05_07' or base_name == '118575_47_56-49_49':
             print(base_name)
+        # else:
             continue
 
         if not tracking_file.exists():
@@ -97,6 +98,9 @@ def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):
 
     for idx in range(25 * 10, (len(tracking_data) - 25), frame_step):
         current_time = tracking_data.iloc[idx]['match_time']
+        # current_time を 40 の倍数に補正
+        current_time = round(current_time / 40) * 40
+
         start_time = current_time - sequence_length * 1000  # ミリ秒単位
 
         # 過去20秒間のデータを取得 (不足時はゼロ埋め)

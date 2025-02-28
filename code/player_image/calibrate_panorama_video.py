@@ -90,7 +90,7 @@ def undistort_video(video_file, pitch_points):
         # 出力動画に書き込む
         out_video.write(undistorted_frame)
         if idx % 3600 == 0:
-            print(idx)
+            print(idx/3600)
         idx += 1
     
     cap.release()
