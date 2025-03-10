@@ -82,7 +82,6 @@ def visualize_label(input_video_path, output_video_path, label_df):
             break
 
         index = frame_count // 5 # - int(frame_rate * 10 / 5)
-        print(index)
         index = min(max(0, index), len(labels_1) - 1)
         label_row_1, label_row_2 = labels_1.iloc[index], labels_2.iloc[index]
         
