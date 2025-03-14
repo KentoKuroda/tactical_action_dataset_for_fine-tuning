@@ -98,7 +98,7 @@ def visualize_output_label(input_video_path, output_video_path, resulting_df, la
             y_position = frame.shape[0] - y_shift + i * 75
             for x_position, label_row, output_row in zip([x_1_position, x_2_position], [label_row_1, label_row_2], [output_row_1, output_row_2]):
                 label = max(0, label_row.get(tactic, 0))
-                text_color = highlight_font_color if label >= 0.75 else default_font_color
+                text_color = default_font_color
                 cv2.putText(frame, tactic, (x_position, y_position), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, 2)
 
                 label_bar_position = int(label * bar_length)
@@ -112,11 +112,11 @@ def visualize_output_label(input_video_path, output_video_path, resulting_df, la
                 if output_row is not None:
                     output = max(0, min(output_row.get(tactic, 0), 1.0))
                     if output < 0.5 and label >= 0.5:
-                        text_color = (255, 0, 0)
+                        text_color = (255, 0, 0) # blue
                     elif output >= 0.5 and label < 0.5:
-                        text_color = (0, 0, 255)
+                        text_color = (0, 200, 255) # dark yellow
                     elif output >= 0.5 and label >= 0.75:
-                        text_color = (255, 0, 255)
+                        text_color = (0, 0, 255) # red
                     else:
                         text_color = (255, 255, 255)
                     cv2.putText(frame, tactic, (x_position, y_position), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, 2)

@@ -61,7 +61,7 @@ def visualize_label(input_video_path, output_video_path, label_df):
     default_font_color = (255, 255, 255)  # White color
     output_bar_color = (170, 218, 255)  # Skin color
     label_bar_color = (255, 165, 0)  # orange color
-    highlight_font_color = (0, 0, 255)  # Red for highest value label
+    highlight_font_color = (255, 0, 0)  # Blue for highest value label
 
     bar_length = 200  # Bar max length
     bar_height = 10   # Bar height
