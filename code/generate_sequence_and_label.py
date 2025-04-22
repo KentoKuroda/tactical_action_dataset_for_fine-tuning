@@ -96,15 +96,16 @@ def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):
     sequence_data = []
     label_data = []
 
-    for idx in range(25 * 10, (len(tracking_data) - 25), frame_step):
+    for idx in range(0, len(tracking_data), frame_step):
         current_time = tracking_data.iloc[idx]['match_time']
         # current_time を 40 の倍数に補正
         current_time = round(current_time / 40) * 40
 
-        start_time = current_time - sequence_length * 1000  # ミリ秒単位
+        start_time = current_time - 10 * 1000  # ミリ秒単位
+        end_time = current_time + 10 * 1000
 
-        # 過去20秒間のデータを取得 (不足時はゼロ埋め)
-        past_data = tracking_data[(tracking_data['match_time'] >= start_time) & (tracking_data['match_time'] <= current_time)]
+        # データを取得 (不足時はゼロ埋め)
+        past_data = tracking_data[(tracking_data['match_time'] >= start_time) & (tracking_data['match_time'] <= end_time)]
         if len(past_data) < original_frames:
             padding = pd.DataFrame(0, index=np.arange(original_frames - len(past_data)), columns=tracking_data.columns)
             past_data = pd.concat([padding, past_data])

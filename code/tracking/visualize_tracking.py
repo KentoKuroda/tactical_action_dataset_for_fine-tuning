@@ -49,7 +49,7 @@ def visualize_tracking(df, output_video_path):
 
         # ボール
         ball_x, ball_y = transform_coords(df.loc[i, 'ball_x'], df.loc[i, 'ball_y'])
-        cv2.circle(frame, (ball_x, ball_y), 8, (0, 255, 255), -1)  # 黄色
+        cv2.circle(frame, (ball_x, ball_y), 8, (0, 0, 0), -1)
 
         # レフトチーム
         for j in range(1, 12):
