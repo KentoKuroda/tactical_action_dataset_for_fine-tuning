@@ -18,15 +18,15 @@ def main():
 
     # Output numpy file
     # 117093_09_22-10_07_, 128058_03_51-05_07_
-    output_sequence_numpy = "data/sequence_np.npy"
-    output_label_numpy = "data/label_np.npy"
+    output_sequence_numpy = "data/sequence_label/sequence_np_including_future.npy"
+    output_label_numpy = "data/sequence_label/label_np_including_future.npy"
 
     all_sequences_list = []
     all_labels_list = []
 
     for match_id in match_ids:
         # Directory containing tracking and annotation files
-        input_directory = f"interim/{match_id}"
+        input_directory = f"data/interim/{match_id}"
 
         sequences, labels = process_data(input_directory)
         if sequences.size > 0 and labels.size > 0:

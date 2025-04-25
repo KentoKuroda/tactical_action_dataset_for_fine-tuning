@@ -1,6 +1,4 @@
 data/
-interim/
-raw/
 
 .codegpt
 token.pickle
