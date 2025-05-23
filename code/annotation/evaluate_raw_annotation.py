@@ -10,22 +10,26 @@ from statsmodels.stats.inter_rater import fleiss_kappa
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--video_id')
-    parser.add_argument('--team_id')
+    parser.add_argument('--video_id', required=False)
+    parser.add_argument('--team_id', required=False)
     return parser.parse_args()
 
 
 def main():
     args = parse_arguments()
-    video_ids = [str(video_id) for video_id in args.video_id.split(",")]
     team_id = args.team_id
+    output_dir = Path("data/raw/annotation")
 
-    for video_id in video_ids:
-        input_files_dir = Path(f"data/raw/annotation/{video_id}_{team_id}")
-        input_files = list(input_files_dir.glob("*.csv"))
-        
-        output_path = Path(f"data/raw/annotation/{video_id}_{team_id}_kappa.csv")
-        calculate_kappa(input_files, output_path)
+    if team_id:
+        video_ids = [str(video_id) for video_id in args.video_id.split(",")]
+        for video_id in video_ids:
+            input_files_dir = Path(f"data/raw/annotation/{video_id}_{team_id}")
+            input_files = list(input_files_dir.glob("*.csv"))
+            
+            output_path = output_dir.joinpath(Path(f"{video_id}_{team_id}_kappa.csv"))
+            calculate_kappa(input_files, output_path)
+
+    average_kappa_results(output_dir)
 
 
 def calculate_kappa(input_files, output_path):
@@ -98,6 +102,33 @@ def calculate_kappa(input_files, output_path):
     }])
     output_df.to_csv(output_path, index=False)
     print(f"→ 結果を {output_path} に保存しました。")
+
+
+def average_kappa_results(output_dir):
+    results = []
+    for i in range(1, 5):
+        right_path = output_dir.joinpath(Path(f"{i}_Right_kappa.csv"))
+        left_path = output_dir.joinpath(Path(f"{i}_Left_kappa.csv"))
+
+        if not right_path.exists() or not left_path.exists():
+            print(f"[警告] {right_path} または {left_path} が存在しません。スキップします。")
+            continue
+
+        df_right = pd.read_csv(right_path)
+        df_left = pd.read_csv(left_path)
+
+        # 平均を計算
+        avg_values = (df_right.iloc[0] + df_left.iloc[0]) / 2
+        avg_values["id"] = i  # 番号を識別用に追加
+        results.append(avg_values)
+
+    if results:
+        combined_df = pd.DataFrame(results)
+        combined_df = combined_df[["id", "agreement_rate", "chance_agreement_rate", "fleiss_kappa", "normalized_agreement"]]
+        combined_df.to_csv("data/raw/annotation/combined_kappa.csv", index=False)
+        print("→ 平均結果を combined_kappa.csv に保存しました。")
+    else:
+        print("平均化する結果が見つかりませんでした。")
 
 
 if __name__ == "__main__":
