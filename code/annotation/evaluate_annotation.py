@@ -163,13 +163,14 @@ def classify_pattern(row):
         return "0 All 0.0"
 
 
-def calculate_overall_summary(results):
+def calculate_overall_summary(results, output_csv=None):
     """
     Calculate the overall summary of proportions and counts for all tactics,
     merging Tactic 1 and 2, and excluding 0.0 from the proportion calculation.
 
     Args:
         results (pd.DataFrame): DataFrame containing "Tactic" and "Value" columns.
+        output_csv (str, optional): If provided, saves the summary as a CSV file.
 
     Returns:
         pd.DataFrame: Summary of proportions and counts for all tactics,
@@ -195,13 +196,21 @@ def calculate_overall_summary(results):
             "0.5_count": filtered_counts.get(0.5, 0),
             "0.75_count": filtered_counts.get(0.75, 0),
             "1.0_count": filtered_counts.get(1.0, 0),
+            "Total_count": total_filtered,
             "0.25": filtered_counts.get(0.25, 0) / total_filtered if total_filtered > 0 else 0,
             "0.5": filtered_counts.get(0.5, 0) / total_filtered if total_filtered > 0 else 0,
             "0.75": filtered_counts.get(0.75, 0) / total_filtered if total_filtered > 0 else 0,
             "1.0": filtered_counts.get(1.0, 0) / total_filtered if total_filtered > 0 else 0,
         })
 
-    return pd.DataFrame(summary)
+    summary_df = pd.DataFrame(summary)
+
+    # Save to CSV if output path is provided
+    if output_csv:
+        summary_df.to_csv(output_csv, index=False)
+
+    return summary_df
+
 
 
 if __name__ == "__main__":

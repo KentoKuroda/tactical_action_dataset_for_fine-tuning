@@ -24,7 +24,7 @@ def main():
             xml_file = f'raw/annotation/{video_id}_{team_id}/{video_id}_{anno_id}_{team_id}.xml'
 
             # TXTファイルの読み込み
-            txt_file = f'raw/video_info/videolist_{video_id}.txt'
+            txt_file = f'raw/video/videolist_{video_id}.txt'
 
             # output file
             output_file = f'raw/annotation/{video_id}_{team_id}/{video_id}_{anno_id}_{team_id}.json'
@@ -44,6 +44,7 @@ def arrange_annotation(xml_file, txt_file, output_file):
     videos = {}
     for video_file in video_files:
         game_id, start_time, end_time = parse_time_range(video_file)
+        print(game_id, start_time, end_time)
         if start_time is not None and end_time is not None:
             videos[video_file] = (game_id, start_time, end_time)
 
@@ -115,14 +116,14 @@ def format_time(seconds):
     return int(m_seconds)
 
 
-def find_video_and_offset(annotation_start_in_seq, videos):
+def find_video_and_offset(annotation_start_in_all_video, videos):
     elapsed_time = 0
     for video in videos:
         game_id, start_time, end_time = videos[video]
         video_duration = end_time - start_time
-        if elapsed_time <= annotation_start_in_seq < elapsed_time + video_duration:
-            annotation_start_in_video = annotation_start_in_seq - elapsed_time
-            return video, annotation_start_in_video, start_time
+        if elapsed_time <= annotation_start_in_all_video < elapsed_time + video_duration:
+            annotation_start_in_each_video = annotation_start_in_all_video - elapsed_time
+            return video, annotation_start_in_each_video, start_time
         elapsed_time += video_duration
     return None, None, None
 

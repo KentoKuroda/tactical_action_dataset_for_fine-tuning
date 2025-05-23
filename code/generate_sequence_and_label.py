@@ -17,16 +17,16 @@ def main():
     match_ids = [str(match_id) for match_id in args.match_ids.split(",")]
 
     # Output numpy file
-    # 117093_09_22-10_07_
-    output_sequence_numpy = "data/sequence_np.npy"
-    output_label_numpy = "data/label_np.npy"
+    # 117093_09_22-10_07_, 128058_03_51-05_07_
+    output_sequence_numpy = "data/sequence_label/sequence_np_including_future.npy"
+    output_label_numpy = "data/sequence_label/label_np_including_future.npy"
 
     all_sequences_list = []
     all_labels_list = []
 
     for match_id in match_ids:
         # Directory containing tracking and annotation files
-        input_directory = f"interim/{match_id}"
+        input_directory = f"data/interim/{match_id}"
 
         sequences, labels = process_data(input_directory)
         if sequences.size > 0 and labels.size > 0:
@@ -58,9 +58,10 @@ def process_data(directory):
         base_name = annotation_file.stem.replace("_annotation_combined", "")
         tracking_file = annotation_file.parent / f"{base_name}_tracking_arranged.csv"
 
-        # 117093_09_22-10_07
-        if base_name == '117093_09_22-10_07':
+        # 117093_09_22-10_07, 128058_03_51-05_07
+        if base_name == '117093_09_22-10_07' or base_name == '128058_03_51-05_07' or base_name == '118575_47_56-49_49':
             print(base_name)
+        # else:
             continue
 
         if not tracking_file.exists():
@@ -95,12 +96,16 @@ def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):
     sequence_data = []
     label_data = []
 
-    for idx in range(25 * 10, (len(tracking_data) - 25), frame_step):
+    for idx in range(0, len(tracking_data), frame_step):
         current_time = tracking_data.iloc[idx]['match_time']
-        start_time = current_time - sequence_length * 1000  # ミリ秒単位
+        # current_time を 40 の倍数に補正
+        current_time = round(current_time / 40) * 40
 
-        # 過去20秒間のデータを取得 (不足時はゼロ埋め)
-        past_data = tracking_data[(tracking_data['match_time'] >= start_time) & (tracking_data['match_time'] <= current_time)]
+        start_time = current_time - 10 * 1000  # ミリ秒単位
+        end_time = current_time + 10 * 1000
+
+        # データを取得 (不足時はゼロ埋め)
+        past_data = tracking_data[(tracking_data['match_time'] >= start_time) & (tracking_data['match_time'] <= end_time)]
         if len(past_data) < original_frames:
             padding = pd.DataFrame(0, index=np.arange(original_frames - len(past_data)), columns=tracking_data.columns)
             past_data = pd.concat([padding, past_data])

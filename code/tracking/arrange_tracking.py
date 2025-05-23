@@ -16,7 +16,7 @@ def main():
     match_ids = [str(match_id) for match_id in args.match_id.split(",")]
 
     # Load JSON data
-    json_file = 'raw/video_info/video_info.json'
+    json_file = 'raw/video/video_info.json'
     with open(json_file, 'r') as f:
         json_data = json.load(f)
 

@@ -20,7 +20,7 @@ def main():
         csv_file_dir = 'raw/tracking'
 
         # TXTファイルの読み込み
-        txt_file = f'raw/video_info/videolist_{video_id}.txt'
+        txt_file = f'raw/video/videolist_{video_id}.txt'
 
         # 抽出したトラッキングデータが入るディレクトリ
         output_file_dir = 'raw/tracking'
