@@ -19,11 +19,11 @@ def main():
     model = args.model
     base_name = args.base_name
 
-    input_video_path = f"raw/visualization/{base_name}.mp4"
-    output_video_path = f"interim/{base_name}_{model}_visualize_label_output.mp4"
-    resulting_csv_path = f"interim/{base_name}_output_{model}.csv"
+    input_video_path = f"data/raw/visualization/{base_name}.mp4"
+    output_video_path = f"data/interim/{base_name}_{model}_visualize_label_output.mp4"
+    resulting_csv_path = f"data/interim/{base_name}_output_{model}.csv"
     resulting_df = pd.read_csv(resulting_csv_path)
-    label_path = f"interim/{base_name}_annotation_combined.csv"
+    label_path = f"data/interim/{base_name}_annotation_combined.csv"
     label_df = pd.read_csv(label_path)
 
     visualize_output_label(input_video_path, output_video_path, resulting_df, label_df)
