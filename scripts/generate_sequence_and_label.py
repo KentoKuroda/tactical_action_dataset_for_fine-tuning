@@ -9,6 +9,7 @@ import argparse
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--match_ids', required=True, help="Comma-separated list of match IDs to process")
+    parser.add_argument('--classification', action='store_true',help="If set, convert labels to 0/1 for classification mode")
     return parser.parse_args()
 
 
@@ -18,17 +19,29 @@ def main():
 
     # Output numpy file
     # 117093_09_22-10_07_, 128058_03_51-05_07_
-    output_sequence_numpy = "data/sequence_label/sequence_np_including_future.npy"
-    output_label_numpy = "data/sequence_label/label_np_including_future.npy"
+    if args.classification:
+        output_sequence_numpy = "data/sequence_label/sequence_np_including_future_classification.npy"
+        output_label_numpy = "data/sequence_label/label_np_including_future_classification.npy"
+    else:
+        output_sequence_numpy = "data/sequence_label/sequence_np_including_future.npy"
+        output_label_numpy = "data/sequence_label/label_np_including_future.npy"
 
     all_sequences_list = []
     all_labels_list = []
+
+    # チームごとの戦術出現回数カウント
+    total_team1_counts = np.zeros(9, dtype=int)
+    total_team2_counts = np.zeros(9, dtype=int)
 
     for match_id in match_ids:
         # Directory containing tracking and annotation files
         input_directory = f"data/interim/{match_id}"
 
-        sequences, labels = process_data(input_directory)
+        sequences, labels, team1_counts, team2_counts = process_data(input_directory, classification_mode=args.classification)
+
+        total_team1_counts += team1_counts
+        total_team2_counts += team2_counts
+
         if sequences.size > 0 and labels.size > 0:
             all_sequences_list.append(sequences)
             all_labels_list.append(labels)
@@ -41,27 +54,48 @@ def main():
         # Save combined sequences and labels
         np.save(output_sequence_numpy, final_sequences)
         np.save(output_label_numpy, final_labels)
+        print(final_sequences.shape)
+        print(final_labels.shape)
         print(f"Final sequences saved to {output_sequence_numpy}")
         print(f"Final labels saved to {output_label_numpy}")
     else:
         print("No valid data to save.")
+    
+    # 分類モードのときのみ戦術出現回数を表示
+    if args.classification:
+        tactics = ["Build up", "Progression", "Final third", "Counter-attack",
+                    "High press", "Mid block", "Low block", "Counter-press", "Recovery"]
+        print("\n=== 戦術が1（過半数）になった回数 ===")
+        print("Team 1:")
+        for t, c in zip(tactics, total_team1_counts):
+            print(f"{t}: {c}")
+        print("\nTeam 2:")
+        for t, c in zip(tactics, total_team2_counts):
+            print(f"{t}: {c}")
 
 
-def process_data(directory):
+def process_data(directory, classification_mode=False):
     sequences_list = []
     labels_list = []
 
+    team1_counts = np.zeros(9, dtype=int)
+    team2_counts = np.zeros(9, dtype=int)
+
     # Get all annotation files
     annotation_files = sorted(Path(directory).rglob("*_annotation_combined.csv"))
+
     for annotation_file in annotation_files:
         # Find the corresponding tracking file
         base_name = annotation_file.stem.replace("_annotation_combined", "")
         tracking_file = annotation_file.parent / f"{base_name}_tracking_arranged.csv"
 
         # 117093_09_22-10_07, 128058_03_51-05_07
-        if base_name == '117093_09_22-10_07' or base_name == '128058_03_51-05_07' or base_name == '118575_47_56-49_49':
-            print(base_name)
+        # if base_name == '118575_47_56-49_49': 
+        #     print(base_name)
         # else:
+        #     continue
+
+        if base_name == '117093_09_22-10_07' or base_name == '128058_03_51-05_07' or base_name == '118575_47_56-49_49':
             continue
 
         if not tracking_file.exists():
@@ -69,13 +103,28 @@ def process_data(directory):
             continue
 
         print(f"Processing {tracking_file.name} and {annotation_file.name}...")
+
         # Load tracking and annotation data
         tracking_data = pd.read_csv(tracking_file)
         annotation_data = pd.read_csv(annotation_file)
 
+        # --- 分類モードなら0/1変換 ---
+        if classification_mode:
+            annotation_data, team1_c, team2_c = convert_labels(annotation_data)
+            team1_counts += team1_c
+            team2_counts += team2_c
+
         # Create sequences and labels
         sequences, labels = create_sequences(tracking_data, annotation_data)
+
+        # --- 分類モードなら全0ラベルを除外 ---
+        if classification_mode:
+            valid_indices = np.any(labels > 0, axis=1)
+            sequences = sequences[valid_indices]
+            labels = labels[valid_indices]
+
         print(base_name, sequences.shape, labels.shape)
+
         sequences_list.append(sequences)
         labels_list.append(labels)
 
@@ -83,9 +132,25 @@ def process_data(directory):
         # Combine all sequences and labels
         all_sequences = np.concatenate(sequences_list, axis=0)
         all_labels = np.concatenate(labels_list, axis=0)
-        return all_sequences, all_labels
+        return all_sequences, all_labels, team1_counts, team2_counts
     else:
-        return np.array([]), np.array([])
+        return np.array([]), np.array([]), team1_counts, team2_counts
+
+
+def convert_labels(annotation_data):
+    """ アノテーションCSVを0/1ラベルに変換 """
+    label_values = annotation_data.iloc[:, 1:].copy()
+
+    # 0.75以上を1、それ以外は0
+    binarized = (label_values >= 0.75).astype(int)
+
+    # 出現回数カウント
+    team1_counts = binarized.iloc[:, :9].sum().values
+    team2_counts = binarized.iloc[:, 9:].sum().values
+
+    # match_timeを戻して再構築
+    binarized_df = pd.concat([annotation_data.iloc[:, [0]], binarized], axis=1)
+    return binarized_df, team1_counts, team2_counts
 
 
 def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):

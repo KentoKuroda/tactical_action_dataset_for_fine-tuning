@@ -19,29 +19,14 @@ def main():
     model = args.model
     base_name = args.base_name
 
-    input_video_path = f"raw/visualization/{base_name}.mp4"
-    output_video_path = f"interim/{base_name}_{model}_visualize_label_output.mp4"
-    resulting_csv_path = f"interim/{base_name}_output_{model}.csv"
+    input_video_path = f"data/raw/visualization/{base_name}.mp4"
+    output_video_path = f"data/interim/{base_name}_{model}_visualize_label_output.mp4"
+    resulting_csv_path = f"data/interim/{base_name}_output_{model}.csv"
     resulting_df = pd.read_csv(resulting_csv_path)
-    label_path = f"interim/{base_name}_annotation_combined.csv"
+    label_path = f"data/interim/{base_name}_annotation_combined.csv"
     label_df = pd.read_csv(label_path)
 
     visualize_output_label(input_video_path, output_video_path, resulting_df, label_df)
-
-
-# Calculate bar position based on value
-def calculate_bar_position(value, bar_length):
-    if value <= 0.1:
-        return 0
-    elif value >= 0.6:
-        return bar_length
-    else:
-        return int((value - 0.1) / (0.6 - 0.1) * bar_length)
-
-
-# New function to calculate position for orange bar
-def calculate_orange_bar_position(value, bar_length):
-    return int(value * bar_length)  # Scale directly from 0 to 1 range
 
 
 def visualize_output_label(input_video_path, output_video_path, resulting_df, label_df):
@@ -111,11 +96,12 @@ def visualize_output_label(input_video_path, output_video_path, resulting_df, la
 
                 if output_row is not None:
                     output = max(0, min(output_row.get(tactic, 0), 1.0))
-                    if output < 0.5 and label >= 0.5:
+                    '''if output < 0.5 and label >= 0.5:
                         text_color = (255, 0, 0) # blue
                     elif output >= 0.5 and label < 0.5:
                         text_color = (0, 200, 255) # dark yellow
-                    elif output >= 0.5 and label >= 0.75:
+                    el'''
+                    if output >= 0.5 and label >= 0.75:
                         text_color = (0, 0, 255) # red
                     else:
                         text_color = (255, 255, 255)

@@ -2,3 +2,4 @@ data/
 
 .codegpt
 token.pickle
+*.zip

@@ -13,7 +13,9 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     match_ids = [str(match_id) for match_id in args.match_ids.split(",")]
-    output_file = "raw/annotation/evaluate_annotation.csv"
+    output_file_1 = "data/raw/annotation/evaluate_annotation_1.csv"
+    output_file_2 = "data/raw/annotation/evaluate_annotation_2.csv"
+    pattern_output_file = "data/raw/annotation/pattern_summary.csv"
 
     all_tactic_results_1 = []
     all_tactic_results_2 = []
@@ -21,7 +23,7 @@ def main():
     all_pattern_results_2 = Counter()
 
     for match_id in match_ids:
-        csv_directory = f"interim/{match_id}"
+        csv_directory = f"data/interim/{match_id}"
 
         try:
             results_1, patterns_1, results_2, patterns_2 = evaluate_tactics(csv_directory)
@@ -36,12 +38,21 @@ def main():
         # Combine tactic results
         combined_tactics_1 = pd.concat(all_tactic_results_1, ignore_index=True)
         combined_tactics_2 = pd.concat(all_tactic_results_2, ignore_index=True)
-        final_tactic_summary = calculate_overall_summary(pd.concat([combined_tactics_1, combined_tactics_2]))
-
         # Process pattern results
         total_patterns_1 = sum(all_pattern_results_1.values())
         total_patterns_2 = sum(all_pattern_results_2.values())
         total_patterns = total_patterns_1 + total_patterns_2
+
+        '''final_tactic_summary = calculate_overall_summary(pd.concat([combined_tactics_1, combined_tactics_2]))
+        final_tactic_summary.to_csv(output_file, index=False)
+        print(f"Tactic summary saved to {output_file}")'''
+
+        summary_1 = calculate_overall_summary(combined_tactics_1)
+        summary_2 = calculate_overall_summary(combined_tactics_2)
+        summary_1.to_csv(output_file_1, index=False)
+        summary_2.to_csv(output_file_2, index=False)
+        print(f"Tactic summary for Team 1 saved to {output_file_1}")
+        print(f"Tactic summary for Team 2 saved to {output_file_2}")
 
         pattern_summary = {
             "Pattern": list(set(all_pattern_results_1.keys()) | set(all_pattern_results_2.keys())),
@@ -51,12 +62,6 @@ def main():
             ]
         }
         pattern_summary_df = pd.DataFrame(pattern_summary)
-
-        # Save results
-        final_tactic_summary.to_csv(output_file, index=False)
-        print(f"Tactic summary saved to {output_file}")
-
-        pattern_output_file = "raw/annotation/pattern_summary.csv"
         pattern_summary_df.to_csv(pattern_output_file, index=False)
         print(f"Pattern summary saved to {pattern_output_file}")
     else:
