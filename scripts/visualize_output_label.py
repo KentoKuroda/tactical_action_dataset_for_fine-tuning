@@ -29,21 +29,6 @@ def main():
     visualize_output_label(input_video_path, output_video_path, resulting_df, label_df)
 
 
-# Calculate bar position based on value
-def calculate_bar_position(value, bar_length):
-    if value <= 0.1:
-        return 0
-    elif value >= 0.6:
-        return bar_length
-    else:
-        return int((value - 0.1) / (0.6 - 0.1) * bar_length)
-
-
-# New function to calculate position for orange bar
-def calculate_orange_bar_position(value, bar_length):
-    return int(value * bar_length)  # Scale directly from 0 to 1 range
-
-
 def visualize_output_label(input_video_path, output_video_path, resulting_df, label_df):
     cap = cv2.VideoCapture(input_video_path)
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -111,11 +96,12 @@ def visualize_output_label(input_video_path, output_video_path, resulting_df, la
 
                 if output_row is not None:
                     output = max(0, min(output_row.get(tactic, 0), 1.0))
-                    if output < 0.5 and label >= 0.5:
+                    '''if output < 0.5 and label >= 0.5:
                         text_color = (255, 0, 0) # blue
                     elif output >= 0.5 and label < 0.5:
                         text_color = (0, 200, 255) # dark yellow
-                    elif output >= 0.5 and label >= 0.75:
+                    el'''
+                    if output >= 0.5 and label >= 0.75:
                         text_color = (0, 0, 255) # red
                     else:
                         text_color = (255, 255, 255)
