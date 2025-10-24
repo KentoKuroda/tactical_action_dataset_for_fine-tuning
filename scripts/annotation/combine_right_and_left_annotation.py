@@ -38,7 +38,7 @@ def combine_csv_files(left_csv_dir: Path, right_csv_dir: Path):
 
         # Parse game ID from the file name (assuming a function parse_time_range exists)
         game_id = left_csv_file.stem.split('_')[0]  # Example: Extract game_id from "gameid_xx.csv"
-        output_dir = Path(f"interim/{game_id}")
+        output_dir = Path(f"data/interim/{game_id}")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Read the CSV files
