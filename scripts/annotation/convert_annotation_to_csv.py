@@ -21,10 +21,10 @@ def main():
         # input file
         input_files = []
         for i in range(1,5):
-            input_files.append(f'raw/annotation/{video_id}_{team_id}/{video_id}_{i}_{team_id}.json')
+            input_files.append(f'data/raw/annotation/{video_id}_{team_id}/{video_id}_{i}_{team_id}.json')
         
         # output file
-        output_dir = f'raw/annotation/{video_id}_{team_id}'
+        output_dir = f'data/raw/annotation/{video_id}_{team_id}'
 
         generate_csv(input_files, output_dir)
 

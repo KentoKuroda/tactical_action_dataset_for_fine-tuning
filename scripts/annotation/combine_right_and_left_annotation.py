@@ -14,8 +14,8 @@ def main():
     args = parse_arguments()
     video_ids = args.video_ids.split(",")
     for video_id in video_ids:
-        left_csv_dir = Path(f"raw/annotation/{video_id}_Left")
-        right_csv_dir = Path(f"raw/annotation/{video_id}_Right")
+        left_csv_dir = Path(f"data/raw/annotation/{video_id}_Left")
+        right_csv_dir = Path(f"data/raw/annotation/{video_id}_Right")
         combine_csv_files(left_csv_dir, right_csv_dir)
 
 

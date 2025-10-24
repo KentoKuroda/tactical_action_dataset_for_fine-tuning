@@ -13,9 +13,9 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     match_ids = [str(match_id) for match_id in args.match_ids.split(",")]
-    output_file_1 = "data/raw/annotation/evaluate_annotation_1.csv"
-    output_file_2 = "data/raw/annotation/evaluate_annotation_2.csv"
-    pattern_output_file = "data/raw/annotation/pattern_summary.csv"
+    output_file_1 = "data/raw/annotation/evaluate_annotation_team1_pattern.csv"
+    output_file_2 = "data/raw/annotation/evaluate_annotation_team2_pattern.csv"
+    pattern_output_file = "data/raw/annotation/evaluate_annotation_pattern.csv"
 
     all_tactic_results_1 = []
     all_tactic_results_2 = []
@@ -54,14 +54,22 @@ def main():
         print(f"Tactic summary for Team 1 saved to {output_file_1}")
         print(f"Tactic summary for Team 2 saved to {output_file_2}")
 
+        # 集計用の辞書を作成
+        all_keys = set(all_pattern_results_1.keys()) | set(all_pattern_results_2.keys())
         pattern_summary = {
-            "Pattern": list(set(all_pattern_results_1.keys()) | set(all_pattern_results_2.keys())),
-            "Proportion": [
-                (all_pattern_results_1.get(pattern, 0) + all_pattern_results_2.get(pattern, 0)) / total_patterns
-                for pattern in set(all_pattern_results_1.keys()) | set(all_pattern_results_2.keys())
-            ]
+            "Pattern": [],
+            "Count": [],
+            "Proportion": []
         }
+
+        for pattern in all_keys:
+            count = all_pattern_results_1.get(pattern, 0) + all_pattern_results_2.get(pattern, 0)
+            pattern_summary["Pattern"].append(pattern)
+            pattern_summary["Count"].append(count)
+            pattern_summary["Proportion"].append(count / total_patterns)
+
         pattern_summary_df = pd.DataFrame(pattern_summary)
+        pattern_summary_df = pattern_summary_df.sort_values(by="Proportion", ascending=False)
         pattern_summary_df.to_csv(pattern_output_file, index=False)
         print(f"Pattern summary saved to {pattern_output_file}")
     else:
@@ -70,13 +78,14 @@ def main():
 
 def evaluate_tactics(csv_dir):
     """
-    Evaluate the tactics and patterns across multiple CSV files.
+    ディレクトリ内のCSVを読み込み、アノテーションのパターンを数え上げる。
 
     Args:
-        csv_dir (str): Directory containing the CSV files to evaluate.
+        csv_dir (str): CSVファイルが格納されているディレクトリ。
 
     Returns:
-        tuple: DataFrames and pattern counts for tactics 1 and 2.
+        tuple: (pattern_counter_1, pattern_counter_2)
+                Tactic 1 と Tactic 2 それぞれのパターン集計(Counterオブジェクト)。
     """
     csv_dir = Path(csv_dir)
     if not csv_dir.exists():
@@ -125,14 +134,20 @@ def evaluate_tactics(csv_dir):
 
 def classify_pattern(row):
     """
-    Classify a row into a specific pattern.
+    1行（1つの場面）のデータを受け取り、定義されたパターンに分類する。
+    ここでの "row" は、4人のアノテーターのラベル（0, 0.25, 0.5, 0.75, 1.0）を含むと想定される。
 
     Args:
-        row (pd.Series): Row of values for tactics.
+        row (pd.Series): アノテーターのラベル値を含む行。
 
     Returns:
-        str: Pattern description.
+        str: パターン記述。
     """
+
+    # 0.0 を除外してカウントしたい場合はここでフィルタリングする. 元のコードは 0.0 も含めてカウントしているように見えるため、そのまま実装.
+    # row_filtered = row[row > 0.0]
+    # counts = Counter(row_filtered)
+
     counts = Counter(row)
 
     # 4 annotator
@@ -140,6 +155,8 @@ def classify_pattern(row):
         return "4 Four 0.25"
     elif counts[0.5] == 1 and counts[0.25] == 2:
         return "4 One 0.5 Two 0.25"
+    elif counts[0.5] == 2:
+        return "4 Two 0.5"
     elif counts[0.75] == 1 and counts[0.25] == 1:
         return "4 One 0.75 One 0.25"
     elif counts[1.0] == 1:
@@ -165,7 +182,12 @@ def classify_pattern(row):
     
     # 0 annotator
     else:
-        return "0 All 0.0"
+        # 元のコードでは "0 All 0.0" だが、counts[0.0] > 0 もしくは counts が空かで判定
+        if counts[0.0] >= 0 and len(counts) == 1: # 0.0しかない、または空
+            return "0 All 0.0"
+        else:
+            # 上記のどのパターンにも一致しない場合
+            return "Other Pattern"
 
 
 def calculate_overall_summary(results, output_csv=None):
@@ -215,7 +237,6 @@ def calculate_overall_summary(results, output_csv=None):
         summary_df.to_csv(output_csv, index=False)
 
     return summary_df
-
 
 
 if __name__ == "__main__":

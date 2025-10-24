@@ -46,6 +46,22 @@ Tactical_Action_Dataset/
     │   └── ...
     └── raw/
         ├── annotation/
+        |   ├── 1_Left
+        |   |   ├── 1_1_Left.json
+        |   |   ├── 1_2_Left.json
+        |   |   ├── 1_3_Left.json
+        |   |   └── 1_4_Left.json
+        |   ├── 1_Right
+        |   |   ├── 1_1_Right.json
+        |   |   ├── 1_2_Right.json
+        |   |   ├── 1_3_Right.json
+        |   |   └── 1_4_Right.json
+        |   ├── 2_Left
+        |   ├── 2_Right
+        |   ├── 3_Left
+        |   ├── 3_Right
+        |   ├── 4_Left
+        |   └── 4_Right
         └── tracking/
 ```
 

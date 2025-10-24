@@ -10,6 +10,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--match_ids', required=True, help="Comma-separated list of match IDs to process")
     parser.add_argument('--classification', action='store_true',help="If set, convert labels to 0/1 for classification mode")
+    parser.add_argument('--team1_only', action='store_true', help="If set, output labels for only Team 1")
     return parser.parse_args()
 
 
@@ -22,6 +23,9 @@ def main():
     if args.classification:
         output_sequence_numpy = "data/sequence_label/sequence_np_including_future_classification.npy"
         output_label_numpy = "data/sequence_label/label_np_including_future_classification.npy"
+    elif args.team1_only:
+        output_sequence_numpy = "data/sequence_label/sequence_np_including_future_team1_only.npy"
+        output_label_numpy = "data/sequence_label/label_np_including_future_team1_only.npy"
     else:
         output_sequence_numpy = "data/sequence_label/sequence_np_including_future.npy"
         output_label_numpy = "data/sequence_label/label_np_including_future.npy"
@@ -37,7 +41,7 @@ def main():
         # Directory containing tracking and annotation files
         input_directory = f"data/interim/{match_id}"
 
-        sequences, labels, team1_counts, team2_counts = process_data(input_directory, classification_mode=args.classification)
+        sequences, labels, team1_counts, team2_counts = process_data(input_directory, classification_mode=args.classification, team1_only_mode=args.team1_only)
 
         total_team1_counts += team1_counts
         total_team2_counts += team2_counts
@@ -74,7 +78,7 @@ def main():
             print(f"{t}: {c}")
 
 
-def process_data(directory, classification_mode=False):
+def process_data(directory, classification_mode=False, team1_only_mode=False):
     sequences_list = []
     labels_list = []
 
@@ -108,13 +112,15 @@ def process_data(directory, classification_mode=False):
         tracking_data = pd.read_csv(tracking_file)
         annotation_data = pd.read_csv(annotation_file)
 
-        # --- 分類モードなら0/1変換 ---
+        # === モード別処理 ===
         if classification_mode:
             annotation_data, team1_c, team2_c = convert_labels(annotation_data)
             team1_counts += team1_c
             team2_counts += team2_c
 
-        # Create sequences and labels
+        elif team1_only_mode:
+            annotation_data = select_team1_labels(annotation_data)
+
         sequences, labels = create_sequences(tracking_data, annotation_data)
 
         # --- 分類モードなら全0ラベルを除外 ---
@@ -151,6 +157,14 @@ def convert_labels(annotation_data):
     # match_timeを戻して再構築
     binarized_df = pd.concat([annotation_data.iloc[:, [0]], binarized], axis=1)
     return binarized_df, team1_counts, team2_counts
+
+
+def select_team1_labels(annotation_data):
+    """ チーム1の列（列名が*_1で終わる）だけを残す """
+    cols = [c for c in annotation_data.columns if c == "match_time" or c.endswith("1")]
+    filtered = annotation_data[cols].copy()
+    print(f"Team1-only columns selected: {len(cols)-1} columns")
+    return filtered
 
 
 def create_sequences(tracking_data, annotation_data, sequence_length=20, fps=5):
