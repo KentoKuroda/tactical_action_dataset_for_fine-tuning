@@ -11,9 +11,8 @@ def parse_arguments():
     parser.add_argument('--match_ids', required=True, help="Comma-separated list of match IDs to process")
     parser.add_argument('--mode', required=True, 
                         choices=['including_future', 'including_future_classification',
-                                'including_future_team1_only', 'including_future_team2_only', 
-                                'including_future_team1_only_classification', 
-                                'including_future_augmentation_2team', 'including_future_augmentation_1team'], help='Evaluation mode')
+                                'including_future_team1_only', 'including_future_team2_only', 'including_future_team1_only_classification', 
+                                'including_future_augmentation_2team', 'including_future_augmentation_1team', 'including_future_augmentation_1team_classification'], help='Evaluation mode')
     return parser.parse_args()
 
 
@@ -63,7 +62,7 @@ def main():
         print("No valid data to save.")
     
     # 分類モードのときのみ戦術出現回数を表示
-    if mode == 'including_future_classification' or mode == 'including_future_team1_only_classification':
+    if 'classification' in mode:
         tactics = ["Build up", "Progression", "Final third", "Counter-attack",
                     "High press", "Mid block", "Low block", "Counter-press", "Recovery"]
         print("\n=== 戦術が1（過半数）になった回数 ===")
@@ -110,7 +109,7 @@ def process_data(directory, mode):
         annotation_data = pd.read_csv(annotation_file)
 
         # === モード別処理 ===
-        if mode == 'including_future_classification' or mode == 'including_future_team1_only_classification':
+        if 'classification' in mode:
             annotation_data, team1_c, team2_c = convert_labels(annotation_data)
             team1_counts += team1_c
             team2_counts += team2_c
@@ -123,7 +122,7 @@ def process_data(directory, mode):
         print(f"{base_name} (raw): {sequences.shape}, {labels.shape}")
 
         # === ★★★ 新規オーグメンテーション処理 ★★★ ===
-        if mode == 'including_future_augmentation_2team':
+        if 'including_future_augmentation_2team' in mode:
             if sequences.size > 0 and labels.size > 0:
                 # ラベルが18列であることを確認
                 if labels.shape[1] != 18:
@@ -149,7 +148,7 @@ def process_data(directory, mode):
                     labels = np.concatenate([labels, augmented_labels], axis=0)
                     print(f"  Augmented (2team): {sequences.shape}, {labels.shape}")
 
-        elif mode == 'including_future_augmentation_1team':
+        elif 'including_future_augmentation_1team' in mode:
             if sequences.size > 0 and labels.size > 0:
                 # ラベルが18列であることを確認
                 if labels.shape[1] != 18:
