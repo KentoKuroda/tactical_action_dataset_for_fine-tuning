@@ -230,27 +230,26 @@ def build_distance_map(labels):
             if (l1, l2) in distance_map:
                 continue
 
-            # (1) 自分自身との距離
-            if l1 == l2:
-                distance_map[(l1, l2)] = 0.0
-                continue
-
             # 'labels' に含まれるが、上のマッピングにない未知のラベルを安全に処理
             phase1 = label_to_phase.get(l1, 'Unknown')
             phase2 = label_to_phase.get(l2, 'Unknown')
 
             distance = 1.0 # デフォルトは 1.0 (完全な不一致)
 
+            # (1) 自分自身との距離
+            if l1 == l2:
+                distance_map[(l1, l2)] = 0.0
+                continue
             if phase1 == 'Unknown' or phase2 == 'Unknown':
                 # マッピングにないラベル (例: 'Unknown', 'Goalkick' など)
                 print(f"Warning: Unknown label found. l1='{l1}'(p={phase1}), l2='{l2}'(p={phase2}). Setting dist=1.0")
-                distance = 1.0
-            elif phase1 == 'No_Label' or phase2 == 'No_Label':
-                # (2) "No_Label" は他の全ての戦術と 1.0
-                distance = 0.25 
+                distance = 1.0 
             elif phase1 == phase2:
-                # (3) ルール「同じ局面同士」
+                # (2) ルール「同じ局面同士」
                 distance = 0.25
+            elif phase1 == 'No_Label' or phase2 == 'No_Label':
+                # (3) "No_Label" は他の全ての戦術と 1.0
+                distance = 0.50
             elif (phase1 in static_phases and phase2 in transition_phases) or \
                     (phase1 in transition_phases and phase2 in static_phases):
                 # (4) ルール「攻撃・守備 と トランジション」
